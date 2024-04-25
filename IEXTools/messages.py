@@ -64,6 +64,11 @@ class MessageDecoder(object):
                     "cls": TradingStatus,
                     "fmt": "<1sq8s4s",
                 },
+                b"\x49": {
+                    "str": "Retail Liquidity Indicator Message",
+                    "cls": RetailLiquidity,
+                    "fmt": "<1sq8s",
+                },
                 b"\x4f": {
                     "str": "Operational Halt Status Message",
                     "cls": OperationalHalt,
@@ -241,6 +246,20 @@ class TradingStatus(Message):
         Message.__post_init__(self)
         self.trading_status_message = trading_status_messages[self.status]
 
+@dataclass
+class RetailLiquidity(Message):
+    """
+    From the TOPS specification document: "TOPS broadcasts a real-time Retail Liquidity
+    Indicator Message each time there is an update to IEX's eligible retail 
+    liquidity interest during the trading day. Prior to the start of trading, IEX publishes
+    a "no interest indicator" (Retail Liquidity Indicator is set to '0x20') for all
+    symbols in the IEX Trading System.
+    """
+
+    __slots__ = ("retail_liquidity_indicator", "timestamp", "symbol")
+    retail_liquidity_indicator: str  # 1 byte
+    timestamp: int  # 8 bytes
+    symbol: str  # 8 bytes
 
 @dataclass
 class OperationalHalt(Message):
@@ -424,6 +443,7 @@ AllMessages = Union[
     SystemEvent,
     SecurityDirective,
     TradingStatus,
+    RetailLiquidity,
     OperationalHalt,
     QuoteUpdate,
 ]
